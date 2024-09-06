@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Runtime.Remoting.Contexts;
+using System.Threading.Tasks;
 
 namespace V2TChat.Hubs
 {
@@ -29,6 +31,13 @@ namespace V2TChat.Hubs
         {
             Users.Remove(Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
+        }
+
+        // Какая-то фигня чтобы во время звонка не было дисконекта
+        // Ещё не отправляет сигналы
+        public async Task SendSignal(string receiverId, string signal)
+        {
+            await Clients.Client(receiverId).SendAsync("ReceiveSignal", Context.ConnectionId, signal);
         }
     }
 }
