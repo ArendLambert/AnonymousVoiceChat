@@ -5,7 +5,13 @@ let remotePeerId;
 let localStream;
 
 // Подключение к серверу для ожидания подключения к собеседнику
+document.getElementById("disconnectButton").addEventListener("click", function () {
+    document.getElementById("connectButton").style.display = "flex";
+    document.getElementById("disconnectButton").style.display = "none";
+})
 document.getElementById("connectButton").addEventListener("click", function () {
+    document.getElementById("connectButton").style.display = "none";
+    document.getElementById("disconnectButton").style.display = "flex";
     connection.start().then(function () {
         console.log("Connected!");
         peer = new Peer(connection.connectionId)
@@ -16,7 +22,6 @@ document.getElementById("connectButton").addEventListener("click", function () {
         // Как ответить
         peer.on('call', function (call) {
             call.answer(localStream);
-
             // Что нам делать с пришедшем потоком
             call.on('stream', function (remoteStream) {
                 const audioElement = document.getElementById('remoteAudio');
