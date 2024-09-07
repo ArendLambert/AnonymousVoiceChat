@@ -7,10 +7,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.7.1/adapter.min.js"></script>
     <p>Tet-a-tet</p>
     <audio id="remoteAudio" controls autoplay></audio>
+
     <div class="center-container">
-        <button id="connectButton">Connect</button>
-        <button id="disconnectButton" style="display: none">Disconnect</button>
+        <button class="btn" id="connectButton">Connect</button>
+        <button class="btn" id="disconnectButton" style="display: none">Disconnect</button>
     </div>
+
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
     <script type="module" src="~/js/chat.js"></script>
     <script src="~/lib/crypto-js/crypto-js.js"></script>

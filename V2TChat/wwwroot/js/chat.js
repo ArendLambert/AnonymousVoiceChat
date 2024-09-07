@@ -2,6 +2,7 @@
 
 let peer;
 let remotePeerId;
+let remoteDisconnectPeerId;
 let thisPeerId;
 let localStream;
 let disconnectButton = document.getElementById("disconnectButton");
@@ -28,7 +29,7 @@ disconnectButton.addEventListener("click", function () {
     endCall();
 
     // Отправляем сигнал на сервер для дисконекта второго пользователя
-    connection.invoke('DisconnectUser', remotePeerId).catch(function (err) {
+    connection.invoke('DisconnectUser', remoteDisconnectPeerId).catch(function (err) {
         return console.error(err.toString());
     });
 });
@@ -58,7 +59,8 @@ connectButton.addEventListener("click", function () {
 // Подключает пару. Ожидает команду из chatHub
 connection.on("StartChat", function (otherUserId) {
     // Написать сюда штобы было аудио
-    remotePeerId = otherUserId
+    //remotePeerId = otherUserId
+    remoteDisconnectPeerId = otherUserId;
     startWebRTC(otherUserId);
 });
 
@@ -90,7 +92,7 @@ function startWebRTC(otherUserId) {
 
             // Отсылаем тот самый сигнал соответствия
             peer.on('signal', function (data) {
-                connection.invoke('SendSignal', otherUserId, data);
+                connection.invoke('SendSignal', remotePeerId, data);
             });
             console.log("Start chat with: " + otherUserId);
         });
