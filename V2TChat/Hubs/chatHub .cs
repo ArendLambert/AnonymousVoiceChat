@@ -9,10 +9,20 @@ namespace V2TChat.Hubs
         private static List<string> Users = new List<string>();
 
         // Запускается при подключении. Создает пару и высылает команду на подключение
-        public override async Task OnConnectedAsync()
+        //public override async Task OnConnectedAsync()
+        //{
+        //    await SearchCopmanion();
+        //}
+
+        public async Task SearchCopmanion()
         {
             Users.Add(Context.ConnectionId);
-            Console.WriteLine(Context.ConnectionId);
+            foreach(string user in Users)
+            {
+                Console.WriteLine(user);
+            }
+            Console.WriteLine("\n");
+            //Console.WriteLine(Context.ConnectionId);
             if (Users.Count >= 2)
             {
                 var user1 = Users[0];
@@ -36,6 +46,11 @@ namespace V2TChat.Hubs
         public async Task SendSignal(string receiverId, string signal)
         {
             await Clients.Client(receiverId).SendAsync("ReceiveSignal", Context.ConnectionId, signal);
+        }
+
+        public async Task DisconnectUser(string userId)
+        {
+            await Clients.Client(userId).SendAsync("Disconnect");
         }
     }
 }

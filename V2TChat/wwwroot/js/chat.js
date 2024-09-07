@@ -1,20 +1,4 @@
-﻿const plaintext = 'Some secret text';
-const password = 'Secret password';
-
-// Шифрование
-const ciphertext = CryptoJS.AES.encrypt(plaintext, password).toString();
-
-// Дешифрование
-const bytes = CryptoJS.AES.decrypt(ciphertext, password);
-const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-
-console.log(ciphertext); // Вывод: "U2FsdGVkX1+trOcJq3qZjx0cq4P4o4M4Xg1WzR4Kjw4="
-console.log(decryptedText); // Вывод: "Some secret text"
-
-
-
-
-const connection = new signalR.HubConnectionBuilder().withUrl("/chathub").build();
+﻿const connection = new signalR.HubConnectionBuilder().withUrl("https://192.168.31.75:7071/chatHub").build();
 
 let peer;
 let remotePeerId;
@@ -23,54 +7,67 @@ let localStream;
 let disconnectButton = document.getElementById("disconnectButton");
 let connectButton = document.getElementById("connectButton");
 
-// Подключение к серверу для ожидания подключения к собеседнику
+// Подключение к серверу
+window.addEventListener('load', () => {
+    connection.start().then(function () {
+        console.log("Connected!");
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+});
+
+// Дисконект от собеседника     BUTTON
 disconnectButton.addEventListener("click", function () {
     function endCall() {
-        if (remotePeerId != null) {
-            remotePeerId.send("end");
-        }
-        if (thisPeerId != null) {
-            thisPeerId.send("end");
-        }
         if (peer != null) {
             peer.destroy();
         }
     }
     connectButton.style.display = "flex";
     disconnectButton.style.display = "none";
-    //connection.close();
-    console.log("disconnectButton");
-    //connection.close();
     endCall();
-})
+
+    // Отправляем сигнал на сервер для дисконекта второго пользователя
+    connection.invoke('DisconnectUser', remotePeerId).catch(function (err) {
+        return console.error(err.toString());
+    });
+});
+
+// Ожидание подключения к собеседнику   BUTTON
 connectButton.addEventListener("click", function () {
+    connection.invoke('SearchCopmanion');
     connectButton.style.display = "none";
     disconnectButton.style.display = "flex";
-    connection.start().then(function () {
-        console.log("Connected!");
-        peer = new Peer(connection.connectionId)
-        peer.on('open', function (thisPeerId) {
-            console.log('My peer ID is: ' + thisPeerId);
-        });
 
-        // Как ответить
-        peer.on('call', function (call) {
-            call.answer(localStream);
-            // Что нам делать с пришедшем потоком
-            call.on('stream', function (remoteStream) {
-                const audioElement = document.getElementById('remoteAudio');
-                audioElement.srcObject = remoteStream;
-            });
+    peer = new Peer(connection.connectionId)
+    peer.on('open', function (thisPeerId) {
+        console.log('My peer ID is: ' + thisPeerId);
+    });
+
+    // Как ответить
+    peer.on('call', function (call) {
+        call.answer(localStream);
+        // Что нам делать с пришедшем потоком
+        call.on('stream', function (remoteStream) {
+            const audioElement = document.getElementById('remoteAudio');
+            audioElement.srcObject = remoteStream;
         });
-    }).catch(function (err) {
-        return console.error(err.toString());
     });
 });
 
 // Подключает пару. Ожидает команду из chatHub
 connection.on("StartChat", function (otherUserId) {
     // Написать сюда штобы было аудио
+    remotePeerId = otherUserId
     startWebRTC(otherUserId);
+});
+
+connection.on("Disconnect", function () {
+    if (peer != null) {
+        peer.destroy();
+    }
+    connectButton.style.display = "flex";
+    disconnectButton.style.display = "none";
 });
 
 // Получает сигнал от другого пользователя на проверку соответствия 
@@ -85,16 +82,6 @@ function startWebRTC(otherUserId) {
         localStream = stream
         console.log(localStream);
 
-        // ШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрование
-        //const ciphertext = CryptoJS.AES.encrypt(localStream, password);
-
-        //const bytes = CryptoJS.AES.decrypt(ciphertext, password);
-        //const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-
-        //console.log(ciphertext);
-        //console.log(decryptedText);
-        // ШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрованиеШифрование
-
         var call = peer.call(otherUserId, localStream);
         call.on('stream', function (remoteStream) {
             // Отобразить стрим на каком-нибудь элементе в Html
@@ -103,19 +90,9 @@ function startWebRTC(otherUserId) {
 
             // Отсылаем тот самый сигнал соответствия
             peer.on('signal', function (data) {
-                connection.invoke('SendSignal', remotePeerId, data);
+                connection.invoke('SendSignal', otherUserId, data);
             });
             console.log("Start chat with: " + otherUserId);
-
-            conn.on("data", (data) => {
-                if (data == "end") {
-                    conn.close();
-                    if (peer != null) {
-                        peer.destroy();
-                    }
-                    console.log("the caller ended the call", data);
-                }
-            });
         });
     }, function (err) {
         console.log('Failed to get local stream', err);
