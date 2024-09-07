@@ -1,21 +1,37 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Just One Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Voice to text chat</h1>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.7.1/adapter.min.js"></script>
-    <p>Tet-a-tet</p>
-    <audio id="remoteAudio" controls autoplay></audio>
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+</head>
+<body class="background">
+    <div class="content">
+        <div class="text-center">
+            <h1 class="display-4">Anonymous Voice Chat</h1>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.7.1/adapter.min.js"></script>
+            <p>ONE WITH ONE</p>
+            <audio id="remoteAudio" controls autoplay class="audio-custom"></audio>
 
-    <div class="center-container">
-        <button class="btn" id="connectButton">Connect</button>
-        <button class="btn" id="disconnectButton" style="display: none">Disconnect</button>
+            <div class="center-container">
+                <button class="btn" id="connectButton"> <i class="fas fa-plug"></i> Connect</button>
+                <button class="btn" id="disconnectButton" style="display: none"><i class="fas fa-share"></i> Disconnect</button>
+            </div>
+
+            <script src="~/js/signalr/dist/browser/signalr.js"></script>
+            <script type="module" src="~/js/chat.js"></script>
+            <script src="~/lib/crypto-js/crypto-js.js"></script>
+            <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+            <link rel="stylesheet" href="~/css/site.css">
+        </div>
     </div>
-
-    <script src="~/js/signalr/dist/browser/signalr.js"></script>
-    <script type="module" src="~/js/chat.js"></script>
-    <script src="~/lib/crypto-js/crypto-js.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-    <style src="~/css/site.css"></style>
-</div>
+    <div class="side-bar left-bar"><i class=""></i></div>
+    <div class="side-bar right-bar"><i class=""></i></div>
+</body>
+<footer class="footer">
+    <div class="container">
+        © 2024 - AVC<a asp-area="" asp-controller="Home"></a>
+    </div>
+</footer>

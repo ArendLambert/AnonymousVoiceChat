@@ -17,15 +17,15 @@ window.addEventListener('load', () => {
     });
 });
 
-// Дисконект от собеседника     BUTTON
+// Дисконект от собеседника BUTTON
 disconnectButton.addEventListener("click", function () {
     function endCall() {
         if (peer != null) {
             peer.destroy();
         }
     }
-    connectButton.style.display = "flex";
-    disconnectButton.style.display = "none";
+    enableButton("connectButton");
+    disableButton("disconnectButton");
     endCall();
 
     // Отправляем сигнал на сервер для дисконекта второго пользователя
@@ -34,21 +34,21 @@ disconnectButton.addEventListener("click", function () {
     });
 });
 
-// Ожидание подключения к собеседнику   BUTTON
+// Ожидание подключения к собеседнику BUTTON
 connectButton.addEventListener("click", function () {
     connection.invoke('SearchCopmanion');
-    connectButton.style.display = "none";
-    disconnectButton.style.display = "flex";
+    disableButton("connectButton");
+    enableButton("disconnectButton");
 
     peer = new Peer(connection.connectionId)
     peer.on('open', function (thisPeerId) {
         console.log('My peer ID is: ' + thisPeerId);
     });
 
-    // Как ответить
+    // Подключаемся к пиру
     peer.on('call', function (call) {
         call.answer(localStream);
-        // Что нам делать с пришедшем потоком
+        // Получаем поток и отображаем
         call.on('stream', function (remoteStream) {
             const audioElement = document.getElementById('remoteAudio');
             audioElement.srcObject = remoteStream;
@@ -58,19 +58,28 @@ connectButton.addEventListener("click", function () {
 
 // Подключает пару. Ожидает команду из chatHub
 connection.on("StartChat", function (otherUserId) {
-    // Написать сюда штобы было аудио
-    //remotePeerId = otherUserId
     remoteDisconnectPeerId = otherUserId;
     startWebRTC(otherUserId);
 });
 
+// Получение команды на отключение от пира
 connection.on("Disconnect", function () {
     if (peer != null) {
         peer.destroy();
     }
-    connectButton.style.display = "flex";
-    disconnectButton.style.display = "none";
+    enableButton("connectButton");
+    disableButton("disconnectButton");
 });
+
+function enableButton(id) {
+    let element = document.getElementById(id);
+    element.style.display = "inline-block"
+}
+
+function disableButton(id) {
+    let element = document.getElementById(id);
+    element.style.display = "none"
+}
 
 // Получает сигнал от другого пользователя на проверку соответствия 
 connection.on("ReceiveSignal", function (senderId, signal) {
@@ -78,7 +87,9 @@ connection.on("ReceiveSignal", function (senderId, signal) {
     peer.signal(signal);
 });
 
+// Функция записи потока и отправки
 function startWebRTC(otherUserId) {
+    // Запрос доступа к микрофону
     var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     getUserMedia({ video: false, audio: true }, function (stream) {
         localStream = stream
@@ -86,11 +97,11 @@ function startWebRTC(otherUserId) {
 
         var call = peer.call(otherUserId, localStream);
         call.on('stream', function (remoteStream) {
-            // Отобразить стрим на каком-нибудь элементе в Html
+            // Отобразить стрим на элементе audio в HTML
             const audioElement = document.getElementById('remoteAudio');
             audioElement.srcObject = remoteStream;
 
-            // Отсылаем тот самый сигнал соответствия
+            // Отсылаем сигнал соответствия
             peer.on('signal', function (data) {
                 connection.invoke('SendSignal', remotePeerId, data);
             });

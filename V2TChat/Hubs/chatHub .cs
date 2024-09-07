@@ -1,53 +1,61 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
+using V2TChat.Models;
 
 namespace V2TChat.Hubs
 {
     public class ChatHub : Hub
     {
         private static List<string> Users = new List<string>();
+        private static List<Pair> UsersPairs = new List<Pair>();
 
-        // Запускается при подключении. Создает пару и высылает команду на подключение
-        //public override async Task OnConnectedAsync()
-        //{
-        //    await SearchCopmanion();
-        //}
-
+        // Выбор собеседника из пула
         public async Task SearchCopmanion()
         {
             Users.Add(Context.ConnectionId);
-            foreach(string user in Users)
-            {
-                Console.WriteLine(user);
-            }
-            Console.WriteLine("\n");
-            //Console.WriteLine(Context.ConnectionId);
             if (Users.Count >= 2)
             {
-                var user1 = Users[0];
-                var user2 = Users[1];
-                await Clients.Client(user1).SendAsync("StartChat", user2);
-                await Clients.Client(user2).SendAsync("StartChat", user1);
+                Pair pair = new Pair(Users[0], Users[1]);
+                await Clients.Client(pair.First).SendAsync("StartChat", pair.Second);
+                await Clients.Client(pair.Second).SendAsync("StartChat", pair.First);
+                UsersPairs.Add(pair);
                 Users.RemoveRange(0, 2);
             }
         }
 
 
-        // При отключении пользователся удаляет из пула
+        // При отключении пользователя удаляет из пула и отключает из соединения
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Users.Remove(Context.ConnectionId);
+            Pair? pair = UsersPairs.Where(p => p.First == Context.ConnectionId || p.Second == Context.ConnectionId).FirstOrDefault();
             await base.OnDisconnectedAsync(exception);
+
+            if (pair == null)
+            {
+                return;
+            }
+
+            if (pair.Second == Context.ConnectionId)
+            {
+                await DisconnectUser(pair.First);
+            }
+            if (pair.First == Context.ConnectionId)
+            {
+                await DisconnectUser(pair.Second);
+            }
+            UsersPairs.Remove(pair);
+
         }
 
-        // Какая-то фигня чтобы во время звонка не было дисконекта
-        // Ещё не отправляет сигналы
+        // Сигнал проверки соответсвия
         public async Task SendSignal(string receiverId, string signal)
         {
             await Clients.Client(receiverId).SendAsync("ReceiveSignal", Context.ConnectionId, signal);
         }
 
+        // Отключает пользователя из соединения
         public async Task DisconnectUser(string userId)
         {
             await Clients.Client(userId).SendAsync("Disconnect");
