@@ -8,11 +8,12 @@
     <p>Tet-a-tet</p>
     <audio id="remoteAudio" controls autoplay></audio>
     <div class="center-container">
-        <button id="connectButton" style="display: flex">Connect</button>
+        <button id="connectButton">Connect</button>
         <button id="disconnectButton" style="display: none">Disconnect</button>
     </div>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
-    <script src="~/js/chat.js"></script>
+    <script type="module" src="~/js/chat.js"></script>
+    <script src="~/lib/crypto-js/crypto-js.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style src="~/css/site.css"></style>
 </div>

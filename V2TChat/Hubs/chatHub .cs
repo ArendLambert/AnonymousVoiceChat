@@ -21,7 +21,6 @@ namespace V2TChat.Hubs
                 await Clients.Client(user2).SendAsync("StartChat", user1);
                 Users.RemoveRange(0, 2);
             }
-            //return base.OnConnectedAsync();
         }
 
 

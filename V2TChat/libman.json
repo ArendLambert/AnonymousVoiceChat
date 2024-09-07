@@ -9,6 +9,11 @@
         "dist/browser/signalr.js",
         "dist/browser/signalr.min.js"
       ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "crypto-js@4.2.0",
+      "destination": "wwwroot/lib/crypto-js/"
     }
   ]
 }
